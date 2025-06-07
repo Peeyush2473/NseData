@@ -49,7 +49,3 @@ def nse_data():
         return jsonify({"error": "Failed to fetch data"}), 500
 
     return jsonify(data)
-
-if __name__ == '__main__':
-    print("🚀 API is starting...")
-    app.run(host='0.0.0.0', port=5000)
