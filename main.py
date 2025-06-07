@@ -6,7 +6,7 @@ import os
 
 print("PORT:", os.environ.get("PORT")) # This will print the port Railway assigns
 
-app = Flask(__name__) # Changed 'name' to '__name__'
+app = Flask(__name__)
 
 @app.route('/')
 def home():
