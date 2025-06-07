@@ -1,54 +1,61 @@
-from flask import Flask, request, jsonify
-import requests
-import csv
-import time
-import os
 
-print("PORT:", os.environ.get("PORT"))
+try:
+    from flask import Flask, request, jsonify
+    import requests
+    import csv
+    import time
+    import os
 
-app = Flask(__name__)
+    print("PORT:", os.environ.get("PORT"))
 
-@app.route('/')
-def home():
-    return "Welcome to NSE API! Use /nse?date=DDMMYYYY"
+    app = Flask(__name__)
 
-def get_nse_data(date_str):
-    url = f"https://archives.nseindia.com/content/nsccl/fao_participant_oi_{date_str}.csv"
+    @app.route('/')
+    def home():
+        return "Welcome to NSE API! Use /nse?date=DDMMYYYY"
 
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9",
-        "Accept-Language": "en-US,en;q=0.5",
-        "Referer": "https://www.nseindia.com/",
-        "Connection": "keep-alive"
-    }
+    def get_nse_data(date_str):
+        url = f"https://archives.nseindia.com/content/nsccl/fao_participant_oi_{date_str}.csv"
 
-    try:
-        session = requests.Session()
-        # Initial request to get cookies
-        init_resp = session.get("https://www.nseindia.com", headers=headers, timeout=10)
-        init_resp.raise_for_status()
-        time.sleep(1)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Referer": "https://www.nseindia.com/",
+            "Connection": "keep-alive"
+        }
 
-        response = session.get(url, headers=headers)
-        response.raise_for_status()
+        try:
+            session = requests.Session()
+            # Initial request to get cookies
+            init_resp = session.get("https://www.nseindia.com", headers=headers, timeout=10)
+            init_resp.raise_for_status()
+            time.sleep(1)
 
-        decoded = response.content.decode("utf-8").splitlines()
-        reader = csv.reader(decoded)
-        return list(reader)
-    except Exception as e:
-        print(f"Exception fetching NSE data: {e}")
-        return None
+            response = session.get(url, headers=headers)
+            response.raise_for_status()
+
+            decoded = response.content.decode("utf-8").splitlines()
+            reader = csv.reader(decoded)
+            return list(reader)
+        except Exception as e:
+            print(f"Exception fetching NSE data: {e}")
+            return None
 
 
-@app.route('/nse', methods=['GET'])
-def nse_data():
-    date = request.args.get('date')  # format should be DDMMYYYY
-    if not date:
-        return jsonify({"error": "Date parameter is required (DDMMYYYY)"}), 400
+    @app.route('/nse', methods=['GET'])
+    def nse_data():
+        date = request.args.get('date')  # format should be DDMMYYYY
+        if not date:
+            return jsonify({"error": "Date parameter is required (DDMMYYYY)"}), 400
 
-    data = get_nse_data(date)
-    if not data:
-        return jsonify({"error": "Failed to fetch data"}), 500
+        data = get_nse_data(date)
+        if not data:
+            return jsonify({"error": "Failed to fetch data"}), 500
 
-    return jsonify(data)
+        return jsonify(data)
+    
+except Exception as e:
+    import sys
+    print("Error during app init:", e, file=sys.stderr)
+    raise
