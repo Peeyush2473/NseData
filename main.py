@@ -2,6 +2,9 @@ from flask import Flask, request, jsonify
 import requests
 import csv
 import time
+import os
+
+print("PORT:", os.environ.get("PORT"))
 
 app = Flask(__name__)
 
